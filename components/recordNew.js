@@ -1,8 +1,11 @@
+//import 'react-native-get-random-values';
 import { Audio } from 'expo-av';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import * as FileSystem from 'expo-file-system';
+//import { v4 as uuidv4 } from 'uuid';
 
-const RecordingPart = ({ savedRecording }) => {
+const RecordingPart = ({ saveRecording }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [recording, setRecording] = useState(null);
     const [permissionsResponse, requestPermission] = Audio.usePermissions();
@@ -43,12 +46,18 @@ const RecordingPart = ({ savedRecording }) => {
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: false,
             })
+
             //Need to save sound that was recorded.  Written as a file, can be stored using cache, which will last until app is reloaded
-            const uri = recording.getURI();
-            savedRecording(uri);
+            const destinationURI = recording.getURI();
+
+            
+            saveRecording(destinationURI);
+            mySoundCheck = null;
+            mySoundCheck = recording.AVPlaybackStatus;
+            console.log(mySoundCheck);
             setRecording(null);
 
-            console.log("Recording stopped and stored at ", uri);
+            console.log("Recording stopped and stored at ", destinationURI);
             setIsRecording(false);
 
         } catch (error) {

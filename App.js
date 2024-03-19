@@ -10,89 +10,23 @@ import { StatusBar } from 'expo-status-bar';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Audio } from 'expo-av';
+import PlaybackPart from './components/playbackPart';
+import RecordingPart from './components/recordNew';
 import * as FileSystem from 'expo-file-system';
 
 export default function App() {
-    const [recording, setRecording] = useState(null);
     const [recordingUri, setRecordingUri] = useState(null);
-    const [playback, setPlayback] = useState(null);
-    const [permissionsResponse, requestPermission] = Audio.usePermissions();
-
-    const startRecording = async () => {
-
-
-        if (permissionsResponse.status !== 'granted') {
-            console.log("Requesting permissions");
-            await requestPermission();
-        }
-        console.log("Permission is ", permissionsResponse.status);
-
-        //set device specific values: you can enable sound to play even in silent mode, but this is poor form
-        await Audio.setAudioModeAsync({
-            allowsRecordingIOS: true,
-            playsInSilentModeIOS: true,
-        })
-
-        //begin recording
-        console.log("Starting recording...");
-        const { recording } = await Audio.Recording.createAsync(
-            Audio.RecordingOptionsPresets.HIGH_QUALITY
-        );
-        setRecording(recording);
-        console.log("...Recording started");
-    
-        console.error("Failed startRecording(): ", error);
-    
-}
-
-const stopRecording = async () => {
-    
-        //need to actually stop the recoring
-        await recording.stopAndUnloadAsync()
-        await Audio.setAudioModeAsync({
-            allowsRecordingIOS: false,
-        })
-        //Need to save sound that was recorded.  Written as a file, can be stored using cache, which will last until app is reloaded
-        const uri = recording.getURI();
-        setRecordingUri(uri);
-
-        setRecording(undefined);
-
-        console.log("Recording stopped and stored at ", uri);
-
-     
-        console.error("Failed to stopRecording(): ", error);
-    
-}
-
-const playRecording = async () => {
-    const { sound } = await Audio.Sound.createAsync({
-        uri: recordingUri
-    })
-    setPlayback(sound);
-    await sound.replayAsync();
-    console.log("Playing recoding from ", recordingUri);
-}
-
-useEffect(() => {
-    return recording
-        ? recording.stopAndUnloadAsync()
-        : undefined;
-}, []);
+    const [recordings, setRecordings] = useState([]);
+    const saveRecording = (filePath) => {
+        setRecordings((prevRecordings) => [...prevRecordings, filePath]);
+    };
 
   return (
-    <View style={styles.container}>
-          <Button
-              title={recording ? 'Stop Recording' : 'Start Recording'}
-              onPress={recording ? stopRecording : startRecording}
-          />
-
-          {recordingUri &&
-              <Button
-                  title="Play the last sound"
-                  onPress={playRecording}
-              />
-          }
+      <View style={styles.container}>
+          <RecordingPart saveRecording={saveRecording} />
+          {recordings.map((audioPath, index) => (
+              <PlaybackPart audioPath={audioPath} key={index} />
+          ))}
       <StatusBar style="auto" />
     </View>
   );
@@ -106,3 +40,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+ 
