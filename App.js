@@ -3,7 +3,6 @@
  Todo: 
  1. Store sound file
  2. Put sound file into database(?)
- 3. Allow multiple DIFFERENT sounds (Duplicate already existing? Create 'import' with ID to have additional sounds?)
  */
 
 import { StatusBar } from 'expo-status-bar';
